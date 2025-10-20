@@ -1,40 +1,49 @@
 namespace ExerciseWindowsForms
 {
-    class Cars : Vehicle
+    class Vehicle :IComparer<Vehicle> // Nice interface to inherit if you want to compare values and sort
     {
-        public Cars(string name, string price, string outstanding, string service, int milage, int id) : base(name, price, outstanding, service, milage,id)
+        string name, service;
+        string price, outstanding;
+        int milage, id;
+
+        protected Vehicle(string name, string price, string outstanding, string service, int milage, int id)
         {
+            this.Name = name;
+            this.Price = price;
+            this.Outstanding = outstanding;
+            this.Service = service;
+            this.Milage = milage;
+            this.Id = id;
         }
-        public Cars()
+      
+        public Vehicle()
         {
 
         }
-        public List<Cars> Car(List<Vehicle> VehicleList)
+        public string Name { get => name; set => name = value; }
+        public string Price { get => price; set => price = value; }
+        public string Outstanding { get => outstanding; set => outstanding = value; }
+        public string Service { get => service; set => service = value; }
+        public int Milage { get => milage; set => milage = value; }
+        public int Id { get => id; set => id = value; }
+
+        //methods to be overriden in subclasses
+        public virtual List<Vehicle> CalculateDiscount(List<Vehicle> VehicleList)
         {
-            List<Cars> CarsList = new List<Cars>();
-            foreach (var item in VehicleList)
-            {
-                if (item is Cars)
-                {
-                    CarsList.Add(item as Cars);
-                }
-            }
-
-            return CarsList;
-        }
-        public override List<Vehicle> CalculateDiscount(List<Vehicle> VehicleList)
-        {
-
-            //10% discount
-            foreach (var item in VehicleList)
-            {
-                if (item is Cars)
-                {
-                    item.Outstanding = (double.Parse(item.Outstanding) * 0.90).ToString();
-                }
-            }
-
             return VehicleList;
+        }
+
+        //Sorting method
+        public int Compare(Vehicle x, Vehicle y)//Use lightbulb to create method
+        {
+
+            //Will return int values based on comparison
+            if (x.Name == y.Name)
+            {
+                return 0;//Indicates names are the same
+            }
+            return x.Name.CompareTo(y.Name);
+            
         }
     }
 }
