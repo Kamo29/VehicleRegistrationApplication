@@ -36,17 +36,6 @@ namespace ExerciseWindowsForms
             // Instantiate the database helper
             VehicleDB db = new VehicleDB();
             
-            // Insert vehicles into the database
-            foreach (var vehicle in VehicleList)
-            {
-                db.InsertVehicle(vehicle);
-            }
-            
-            // Optionally, retrieve vehicles from DB to display in grid
-            VehicleList = db.GetVehicles();
-            bs.DataSource = VehicleList;
-            dataGridView1.DataSource = bs;
-
             //Adding R symbol to indicate rand for displaying purposes
             foreach (var item in VehicleList)
             {
