@@ -1,12 +1,12 @@
 using System;
-using System.Data;
+using System.Collections.Generic;
 using System.Data.SqlClient;
 
-namespace VehicleRegistration
+namespace ExerciseWindowsForms
 {
-    class Database
+    public class VehicleDB
     {
-        private string connectionString = "Server=YOUR_SERVER;Database=(Vehicle DB);User Id=YOUR_USER;Password=YOUR_PASSWORD;";
+        private string connectionString = "Server=YOUR_SERVER;Database=VehicleDB;User Id=YOUR_USER;Password=YOUR_PASSWORD;";
 
         public SqlConnection GetConnection()
         {
@@ -14,36 +14,41 @@ namespace VehicleRegistration
             try
             {
                 conn.Open();
-                Console.WriteLine("Connected to VehicleDB successfully.");
+                Console.WriteLine("Connected to VehicleDB");
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error connecting to DB: " + ex.Message);
+                Console.WriteLine("DB Connection Error: " + ex.Message);
             }
             return conn;
         }
 
-        // Example: Insert Vehicle
-        public void InsertVehicle(string regNumber, string ownerName, string vehicleType)
+        // Insert vehicle
+        public void InsertVehicle(Vehicle vehicle)
         {
             using (SqlConnection conn = GetConnection())
             {
-                string query = "INSERT INTO Vehicles (RegNumber, OwnerName, VehicleType) VALUES (@RegNumber, @OwnerName, @VehicleType)";
+                string query = @"INSERT INTO Vehicles 
+                                (Name, Price, Outstanding, Service, Milage, VehicleType)
+                                VALUES (@Name, @Price, @Outstanding, @Service, @Milage, @VehicleType)";
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
-                    cmd.Parameters.AddWithValue("@RegNumber", regNumber);
-                    cmd.Parameters.AddWithValue("@OwnerName", ownerName);
-                    cmd.Parameters.AddWithValue("@VehicleType", vehicleType);
+                    cmd.Parameters.AddWithValue("@Name", vehicle.Name);
+                    cmd.Parameters.AddWithValue("@Price", decimal.Parse(vehicle.Price.Replace("R ", "")));
+                    cmd.Parameters.AddWithValue("@Outstanding", decimal.Parse(vehicle.Outstanding.Replace("R ", "")));
+                    cmd.Parameters.AddWithValue("@Service", DateTime.Parse(vehicle.Service));
+                    cmd.Parameters.AddWithValue("@Milage", vehicle.Milage);
+                    cmd.Parameters.AddWithValue("@VehicleType", vehicle is Cars ? "Car" : "Bus");
 
-                    int rows = cmd.ExecuteNonQuery();
-                    Console.WriteLine($"{rows} vehicle inserted.");
+                    cmd.ExecuteNonQuery();
                 }
             }
         }
 
-        // Example: Retrieve Vehicles
-        public void GetVehicles()
+        // Get all vehicles
+        public List<Vehicle> GetVehicles()
         {
+            List<Vehicle> vehicleList = new List<Vehicle>();
             using (SqlConnection conn = GetConnection())
             {
                 string query = "SELECT * FROM Vehicles";
@@ -52,10 +57,24 @@ namespace VehicleRegistration
                 {
                     while (reader.Read())
                     {
-                        Console.WriteLine($"{reader["VehicleId"]}: {reader["RegNumber"]} - {reader["OwnerName"]} - {reader["VehicleType"]}");
+                        Vehicle v;
+                        if (reader["VehicleType"].ToString() == "Car")
+                            v = new Cars();
+                        else
+                            v = new Busses();
+
+                        v.Id = Convert.ToInt32(reader["VehicleId"]);
+                        v.Name = reader["Name"].ToString();
+                        v.Price = "R " + reader["Price"].ToString();
+                        v.Outstanding = "R " + reader["Outstanding"].ToString();
+                        v.Service = Convert.ToDateTime(reader["Service"]).ToString("yyyy/MM/dd");
+                        v.Milage = Convert.ToInt32(reader["Milage"]);
+
+                        vehicleList.Add(v);
                     }
                 }
             }
+            return vehicleList;
         }
     }
 }
